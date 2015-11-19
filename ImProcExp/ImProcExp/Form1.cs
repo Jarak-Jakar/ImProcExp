@@ -63,7 +63,7 @@ namespace ImProcExp
         {
             Bitmap currImage, rotatedImage;
             rotatedImage = null;
-            currImage = (Bitmap) pictureBox1.Image;
+            currImage = new Bitmap(pictureBox1.Image);
 
             int excessTheta = angle % 90; //the amount of the angle (if any) which isn't a multiple of 90 degrees
             int baseTheta = angle - excessTheta; //the amount of the angle that is a multiple of 90 degrees
@@ -84,7 +84,6 @@ namespace ImProcExp
                         for (int j = 0; j < rotatedImage.Height; j++)
                         {
                             rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - (j + 1), i));
-                            //rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Height - (i+1), j));
                         }
                     }
 
@@ -106,14 +105,40 @@ namespace ImProcExp
                         for (int j = 0; j < rotatedImage.Height; j++)
                         {
                             rotatedImage.SetPixel(i, j, currImage.GetPixel(j, currImage.Height - (i + 1)));
-                            //rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - (j + 1), i));
                         }
                     }
                 }
 
                 if(excessTheta != 0) //if the angle wasn't just a multiple of 90 degrees, will carry out the remaining rotation needed
                 {
+                    currImage = new Bitmap(rotatedImage);
+                    rotatedImage.Dispose();
+                    rotatedImage = new Bitmap(Math.Max(currImage.Width, currImage.Height), Math.Max(currImage.Width, currImage.Height));
+                    double rho, coordTheta;
+                    int refX, refY;
+                    double excessThetaRad = (Math.PI * excessTheta) / 180.0;
 
+                    for (int i = 0; i < rotatedImage.Width; i++)
+                    {
+                        for (int j = 0; j < rotatedImage.Height; j++)
+                        {
+                            // Transform cartesian coordinates to polar coordinates.  Information will be lost due to having to convert between floats and ints
+                            rho = System.Math.Sqrt((i*i) + (j*j));
+                            coordTheta = System.Math.Atan2(j, i);
+
+                            //convert the polar coordinates back to cartesian, adjusting for excessTheta
+                            refX = Convert.ToInt32(Math.Truncate(rho * Math.Cos(coordTheta - excessThetaRad))) - (currImage.Width / 2);
+                            refY = Convert.ToInt32(Math.Truncate(rho * Math.Sin(coordTheta - excessThetaRad))) + (currImage.Height / 2);
+
+                            if( (refX < 0 || refX >= currImage.Width) || (refY < 0 || refY >= currImage.Height) )
+                            {
+                                rotatedImage.SetPixel(i, j, Color.Gray);
+                            } else
+                            {
+                                rotatedImage.SetPixel(i, j, currImage.GetPixel(refX, refY));
+                            }
+                        }
+                    }
                 }
             }
             else //perform anti-clockwise rotation - no action needed if baseTheta is a multiple of 360 degrees, so no case for it
@@ -140,32 +165,7 @@ namespace ImProcExp
 
                 }
             }
-
-            /*if((angle % 180) == 0)
-            {
-                rotatedImage = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-                int multiple = angle / 180;
-
-                for (int i = 0; i < rotatedImage.Width; i++)
-                {
-                    for (int j = 0; j < rotatedImage.Height; j++)
-                    {
-                        rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - (i + 1), currImage.Height - (j + 1)));
-                    }
-                }
-                pictureBox1.Image = rotatedImage;
-            }
-            else if((angle % 90) == 0)
-            {
-                rotatedImage = new Bitmap(pictureBox1.Height, pictureBox1.Width);
-            }*/
-            /* else
-             {
-
-             }*/
-            //Bitmap rotatedImage = new Bitmap(pictureBox1.Height, pictureBox1.Width);
-            //moar code!
-
+            currImage.Dispose();
             pictureBox1.Image = rotatedImage;
             return;
         }
