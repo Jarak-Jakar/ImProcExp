@@ -63,10 +63,10 @@
             this.ClockwiseLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ClockwiseLabel.Location = new System.Drawing.Point(3, 26);
             this.ClockwiseLabel.Name = "ClockwiseLabel";
-            this.ClockwiseLabel.Size = new System.Drawing.Size(266, 39);
+            this.ClockwiseLabel.Size = new System.Drawing.Size(243, 39);
             this.ClockwiseLabel.TabIndex = 1;
-            this.ClockwiseLabel.Text = "Enter integer degrees for the image to be rotated clockwise (remember that rotati" +
-    "ons that aren\'t multiples of 90 degrees will cause information loss)";
+            this.ClockwiseLabel.Text = "Enter integer degrees for the image to be rotated (remember that rotations that a" +
+    "ren\'t multiples of 90 degrees will cause information loss)";
             // 
             // ClockwiseAccept
             // 

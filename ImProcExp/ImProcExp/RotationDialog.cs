@@ -32,13 +32,13 @@ namespace ImProcExp
             return;
         }
 
-        public void ShowClockwise()
+        public void ShowDia()
         {
             ClockwisePanel.Visible = true;
             return;
         }
 
-        public void HideClockwise()
+        public void HideDia()
         {
             ClockwisePanel.Visible = false;
             return;

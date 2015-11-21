@@ -40,9 +40,9 @@ namespace ImProcExp
         private void rotateClockwiseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RotationDialog RTDia = new RotationDialog();
-            RTDia.ShowClockwise();
+            RTDia.ShowDia();
             DialogResult result = RTDia.ShowDialog();
-            RTDia.HideClockwise();
+            RTDia.HideDia();
 
             switch(result)
             {
@@ -123,14 +123,14 @@ namespace ImProcExp
                         for (int j = 0; j < rotatedImage.Height; j++)
                         {
                             // Transform cartesian coordinates to polar coordinates.  Information will be lost due to having to convert between floats and ints
-                            rho = System.Math.Sqrt((i*i) + (j*j));
-                            coordTheta = System.Math.Atan2(j, i);
+                            rho = Math.Sqrt((i*i) + (j*j));
+                            coordTheta = Math.Atan2(j, i);
 
                             //convert the polar coordinates back to cartesian, adjusting for excessTheta
-                            refX = Convert.ToInt32(Math.Truncate(rho * Math.Cos(coordTheta - excessThetaRad))) - (currImage.Width / 2);
-                            refY = Convert.ToInt32(Math.Truncate(rho * Math.Sin(coordTheta - excessThetaRad))) + (currImage.Height / 2);
+                            refX = Convert.ToInt32(Math.Truncate(rho * Math.Cos(coordTheta - excessThetaRad)));
+                            refY = Convert.ToInt32(Math.Truncate(rho * Math.Sin(coordTheta - excessThetaRad)));                                                   
 
-                            if( (refX < 0 || refX >= currImage.Width) || (refY < 0 || refY >= currImage.Height) )
+                            if ( (refX < 0 || refX >= currImage.Width) || (refY < 0 || refY >= currImage.Height) )
                             {
                                 rotatedImage.SetPixel(i, j, Color.Gray);
                             } else
@@ -149,24 +149,133 @@ namespace ImProcExp
                 }
                 else if (baseTheta % 270 == 0) //base rotation is identical to rotation of 270 degrees
                 {
-
+                    rotatedImage = new Bitmap(currImage.Height, currImage.Width);
+                    for (int i = 0; i < rotatedImage.Width; i++)
+                    {
+                        for (int j = 0; j < rotatedImage.Height; j++)
+                        {
+                            rotatedImage.SetPixel(i, j, currImage.GetPixel(j, currImage.Height - (i + 1)));
+                        }
+                    }
                 }
                 else if (baseTheta % 180 == 0) //base rotation is identical to rotation of 180 degrees
                 {
-
+                    rotatedImage = new Bitmap(currImage.Width, currImage.Height);
+                    for (int i = 0; i < rotatedImage.Width; i++)
+                    {
+                        for (int j = 0; j < rotatedImage.Height; j++)
+                        {
+                            rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - (i + 1), currImage.Height - (j + 1)));
+                        }
+                    }
                 }
                 else if (baseTheta % 90 == 0) //base rotation is identical to rotation of 90 degrees
                 {
-
+                    rotatedImage = new Bitmap(currImage.Height, currImage.Width);
+                    for (int i = 0; i < rotatedImage.Width; i++)
+                    {
+                        for (int j = 0; j < rotatedImage.Height; j++)
+                        {
+                            rotatedImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - (j + 1), i));
+                        }
+                    }
                 }
 
                 if (excessTheta != 0) //if the angle wasn't just a multiple of 90 degrees, will carry out the remaining rotation needed
                 {
+                    currImage = new Bitmap(rotatedImage);
+                    rotatedImage.Dispose();
+                    int currW = currImage.Width;
+                    int currH = currImage.Height;
+                    rotatedImage = new Bitmap(Math.Max(currW, currH), Math.Max(currW, currH));
+                    double rho, coordTheta;
+                    int refX, refY;
+                    double excessThetaRad = (Math.PI * excessTheta) / 180.0;
 
+                    for (int i = 0; i < rotatedImage.Width; i++)
+                    {
+                        for (int j = 0; j < rotatedImage.Height; j++)
+                        {
+                            // Transform cartesian coordinates to polar coordinates.  Information will be lost due to having to convert between floats and ints
+                            rho = Math.Sqrt((i * i) + (j * j));
+                            coordTheta = Math.Atan2(j, i);
+
+                            //convert the polar coordinates back to cartesian, adjusting for excessTheta
+                            refX = Convert.ToInt32(Math.Truncate(rho * Math.Cos(coordTheta + excessThetaRad)));
+                            refY = Convert.ToInt32(Math.Truncate(rho * Math.Sin(coordTheta + excessThetaRad)));
+
+                            if ((refX < 0 || refX >= currW) || (refY < 0 || refY >= currW))
+                            {
+                                rotatedImage.SetPixel(i, j, Color.Gray);
+                            }
+                            else
+                            {
+                                rotatedImage.SetPixel(i, j, currImage.GetPixel(refX, refY));
+                            }
+                        }
+                    }
                 }
             }
             currImage.Dispose();
             pictureBox1.Image = rotatedImage;
+            return;
+        }
+
+        private void rotateAnticlockwiseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RotationDialog RTDia = new RotationDialog();
+            RTDia.ShowDia();
+            DialogResult result = RTDia.ShowDialog();
+            RTDia.HideDia();
+
+            switch (result)
+            {
+                case DialogResult.OK:
+                    rotateImage(false, RTDia.angle);
+                    break;
+                case DialogResult.Cancel:
+                    break;
+                default:
+                    break;
+            }
+
+            RTDia.Dispose();
+            return;
+        }
+
+        private void verticalReflectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Bitmap currImage = new Bitmap(pictureBox1.Image);
+            Bitmap refImage = new Bitmap(currImage.Width, currImage.Height);
+
+            for (int i = 0; i < refImage.Width; i++)
+            {
+                for (int j = 0; j < refImage.Height; j++)
+                {
+                    refImage.SetPixel(i, j, currImage.GetPixel(i, currImage.Height - j - 1));
+                }
+            }
+
+            currImage.Dispose();
+            pictureBox1.Image = refImage;
+            return;
+        }
+
+        private void horizontalReflectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Bitmap currImage = new Bitmap(pictureBox1.Image);
+            Bitmap refImage = new Bitmap(currImage.Width, currImage.Height);
+
+            for (int i = 0; i < refImage.Width; i++)
+            {
+                for (int j = 0; j < refImage.Height; j++)
+                {
+                    refImage.SetPixel(i, j, currImage.GetPixel(currImage.Width - i - 1, j));
+                }
+            }
+
+            currImage.Dispose();
+            pictureBox1.Image = refImage;
             return;
         }
     }
